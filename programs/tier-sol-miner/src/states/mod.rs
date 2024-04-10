@@ -1,5 +1,5 @@
 pub mod tier;
-mod mine;
-mod user;
-mod referral;
-mod whitelist;
+pub mod mine;
+pub mod user;
+pub mod referral;
+pub mod whitelist;

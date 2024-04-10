@@ -7,11 +7,12 @@ pub struct MineInfo {
     pub dev_fee: u64,
     pub early_withdrawal_fee: u64,
     pub referral_reward: u64,
+    pub bump: u8,
     pub is_active: bool
 }
 
 impl Space for MineInfo {
-    const INIT_SPACE: usize = 32 + (8 * 3) + 1;
+    const INIT_SPACE: usize = 32 + (8 * 3) + 2;
 }
 
 #[account]
