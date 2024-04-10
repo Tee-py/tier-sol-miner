@@ -1,0 +1,24 @@
+use anchor_lang::prelude::*;
+
+#[account]
+pub struct MineInfo {
+    pub admin: Pubkey,
+    pub fee_collector: Pubkey,
+    pub dev_fee: u64,
+    pub early_withdrawal_fee: u64,
+    pub referral_reward: u64,
+    pub is_active: bool
+}
+
+impl Space for MineInfo {
+    const INIT_SPACE: usize = 32 + (8 * 3) + 1;
+}
+
+#[account]
+pub struct MineVault {
+    pub bump: u8
+}
+
+impl Space for MineVault {
+    const INIT_SPACE: usize = 1;
+}
