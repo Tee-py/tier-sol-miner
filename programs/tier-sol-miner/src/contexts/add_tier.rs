@@ -29,11 +29,11 @@ impl<'info> AddTier<'info> {
         &mut self,
         minimum_token_amount: u64,
         apy: u64,
-        minimum_lock_duration: u64,
+        lock_duration: u64,
         bump: u8
     ) -> Result<()> {
         self.tier.set_inner(TierInfo {
-            minimum_lock_duration,
+            lock_duration,
             minimum_token_amount,
             apy,
             is_active: true,

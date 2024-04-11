@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct ReferralInfo {
-    pub user: Pubkey,
+    pub user_info: Pubkey,
     pub owner: Pubkey,
     pub earnings: u64,
     pub count: u64

@@ -5,7 +5,7 @@ pub struct TierInfo {
     pub minimum_token_amount: u64,
     pub total_locked: u64,
     pub apy: u64,
-    pub minimum_lock_duration: u64,
+    pub lock_duration: u64,
     pub is_active: bool,
     pub bump: u8
 }

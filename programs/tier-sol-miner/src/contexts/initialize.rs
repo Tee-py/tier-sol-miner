@@ -30,12 +30,14 @@ impl<'info> Initialize<'info> {
         bump1: u8,
         bump2: u8,
         fee_collector: Pubkey,
+        token_mint: Pubkey,
         dev_fee: u64,
         early_withdrawal_fee: u64,
         referral_reward: u64
     ) -> Result<()> {
         self.mine_info.set_inner(MineInfo {
             admin: *self.initializer.key,
+            token_mint,
             fee_collector,
             dev_fee,
             early_withdrawal_fee,

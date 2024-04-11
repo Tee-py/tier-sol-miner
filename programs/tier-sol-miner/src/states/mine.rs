@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct MineInfo {
     pub admin: Pubkey,
+    pub token_mint: Pubkey,
     pub fee_collector: Pubkey,
     pub dev_fee: u64,
     pub early_withdrawal_fee: u64,
@@ -12,7 +13,7 @@ pub struct MineInfo {
 }
 
 impl Space for MineInfo {
-    const INIT_SPACE: usize = 32 + (8 * 3) + 2;
+    const INIT_SPACE: usize = (32 * 2) + (8 * 3) + 2;
 }
 
 #[account]
