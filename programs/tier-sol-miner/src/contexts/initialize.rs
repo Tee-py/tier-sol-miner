@@ -12,7 +12,7 @@ pub struct Initialize<'info> {
         seeds = [b"mine".as_ref(), initializer.key().as_ref()],
         bump
     )]
-    pub mine_account: Account<'info, MineInfo>,
+    pub mine_info: Account<'info, MineInfo>,
     #[account(
         init,
         payer = initializer,
@@ -34,7 +34,7 @@ impl<'info> Initialize<'info> {
         early_withdrawal_fee: u64,
         referral_reward: u64
     ) -> Result<()> {
-        self.mine_account.set_inner(MineInfo {
+        self.mine_info.set_inner(MineInfo {
             admin: *self.initializer.key,
             fee_collector,
             dev_fee,
