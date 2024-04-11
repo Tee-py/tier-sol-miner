@@ -72,4 +72,17 @@ pub mod tier_sol_miner {
         )?;
         Ok(())
     }
+
+    pub fn initialize_whitelist(
+        ctx: Context<InitWhiteList>,
+        tier_name: &[u8],
+        deposit_amount: u64
+    ) -> Result<()> {
+        ctx.accounts.consume_whitelist(
+            deposit_amount,
+            ctx.bumps.user_info,
+            tier_name
+        )?;
+        Ok(())
+    }
 }

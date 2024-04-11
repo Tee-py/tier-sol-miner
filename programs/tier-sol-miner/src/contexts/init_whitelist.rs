@@ -1,20 +1,18 @@
 use anchor_lang::prelude::*;
-use crate::states::user::UserInfo;
-use crate::states::mine::{MineInfo, MineVault};
-use crate::states::referral::ReferralInfo;
-use crate::states::tier::TierInfo;
-use crate::states::whitelist::WhitelistInfo;
 use solana_program::system_instruction;
-use anchor_spl::token::TokenAccount;
-use crate::math::{calculate_fee, calculate_interest};
+use crate::states::mine::{MineInfo, MineVault};
+use crate::states::tier::TierInfo;
+use crate::states::user::UserInfo;
+use crate::states::whitelist::WhitelistInfo;
 use crate::errors::MinerError;
+use crate::math::{calculate_fee, calculate_interest};
 
-/// Instruction to call for new users that have not started staking SOL
+/// Instruction to call for whitelisted users that have not started staking SOL
 /// in a TIER. Initializes new user info account and accepts lamports to
-/// deposit into the vault.
+/// deposit into the vault. Whitelisted users does not need to hold tokens
 #[derive(Accounts)]
 #[instruction(_tier_name: &[u8])]
-pub struct InitStaking<'info> {
+pub struct InitWhiteList<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(
@@ -25,14 +23,6 @@ pub struct InitStaking<'info> {
         bump
     )]
     pub user_info: Account<'info, UserInfo>,
-    #[account(
-        constraint = (
-            token_account.mint == mine_info.token_mint &&
-            token_account.amount >= tier.minimum_token_amount &&
-            token_account.owner == signer
-        ) @ MineError::InvalidTokenAccount
-    )]
-    pub token_account: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"mine".as_ref(), mine_info.admin.as_ref()],
         bump = mine_info.bump,
@@ -46,34 +36,24 @@ pub struct InitStaking<'info> {
     )]
     pub mine_vault: Account<'info, MineVault>,
     #[account(
+        seeds = [b"whitelist", signer.key().as_ref(), mine_info.admin.as_ref()],
+        bump = whitelist_info.bump,
+        close = signer
+    )]
+    pub whitelist_info: Account<'info, WhitelistInfo>,
+    #[account(
         mut,
         seeds: [tier_name.as_ref(), mine_info.admin.as_ref()],
         bump = tier.bump,
         constraint = tier.is_active @ MineError::InactiveTier
     )]
-    pub tier: Account<'info, TierInfo>,
-    #[account(
-        constraint = signer.key() != referrer_user_info.owner @ MineError::InvalidReferrer
-    )]
-    pub referrer_user_info: Option<Account<'info, UserInfo>>,
-    #[account(
-        init_if_needed,
-        payer = signer,
-        space = 8 + ReferralInfo::INIT_SPACE,
-        seeds = [b"referral", referrer_user_info.key().as_ref()],
-        bump
-    )]
-    pub referrer_info: Option<Account<'info, ReferralInfo>>,
-    #[account(
-        mut,
-        constraint = mine_info.fee_collector == fee_collector.key() @ MineError::InvalidFeeCollector
-    )]
+    pub tier_info: Account<'info, TierInfo>,
     pub fee_collector: SystemAccount<'info>,
     pub system_program: Program<'info, System>
 }
 
-impl<'info> InitStaking<'info> {
-    pub fn initialize(
+impl<'info> InitWhiteList<'info> {
+    pub fn consume_whitelist(
         &mut self,
         deposit_amount: u64,
         bump: u8,
@@ -82,6 +62,10 @@ impl<'info> InitStaking<'info> {
         if deposit_amount <= 0 {
             err!(MinerError::InvalidDepositAmount);
         }
+        if (Clock::get()?.unix_timestamp as u64) > self.whitelist_info.expiry {
+            err!(MinerError::ExpiredWhiteList);
+        }
+
         // Calculate fees and transfer lamports to vault and fee collector
         let dev_fee = calculate_fee(deposit_amount, self.mine_info.dev_fee);
         let actual_amount = deposit_amount - dev_fee;
@@ -119,40 +103,16 @@ impl<'info> InitStaking<'info> {
             bump,
             owner: self.signer.key(),
             total_locked: actual_amount,
-            accrued_interest: calculate_interest(actual_amount, self.tier.apy, self.tier.lock_duration),
+            accrued_interest: calculate_interest(actual_amount, self.tier_info.apy, self.tier_info.lock_duration),
             lock_ts: Clock::get()?.unix_timestamp as u64,
-            tier: self.tier.key(),
-            is_whitelist: false
+            tier: self.tier_info.key(),
+            is_whitelist: true
         });
 
         // Update Tier total locked
-        let mut tier_info = self.tier.clone().into_inner();
+        let mut tier_info = self.tier_info.clone().into_inner();
         tier_info.total_locked = tier_info.total_locked.saturating_add(actual_amount);
-        self.tier.set_inner(tier_info);
-
-        // Handle referral
-        match &mut self.referrer_info {
-            Some(referrer) => {
-                match &mut self.referrer_user_info {
-                    Some(ref_user_info) => {
-                        let bonus = calculate_fee(actual_amount, self.mine_info.referral_reward);
-                        let mut referral_info = referrer.clone().into_inner();
-                        if referral_info.earnings == 0 {
-                            referral_info.earnings = bonus;
-                            referral_info.count = 1;
-                            referral_info.owner = ref_user_info.owner;
-                            referral_info.user_info = ref_user_info.key();
-                        } else {
-                            referral_info.count += 1;
-                            referral_info.earnings = referral_info.earnings.saturating_add(bonus);
-                        }
-                        referrer.set_inner(referral_info);
-                    },
-                    None => {}
-                }
-            },
-            None => {}
-        }
+        self.tier_info.set_inner(tier_info);
         Ok(())
     }
 }

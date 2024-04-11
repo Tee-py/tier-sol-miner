@@ -11,5 +11,9 @@ pub enum MinerError {
     #[msg("Referral account is invalid")]
     InvalidReferrer,
     #[msg("Invalid Fee Collector")]
-    InvalidFeeCollector
+    InvalidFeeCollector,
+    #[msg("Whitelist has expired")]
+    ExpiredWhiteList,
+    #[msg("Invalid deposit amount")]
+    InvalidDepositAmount
 }
