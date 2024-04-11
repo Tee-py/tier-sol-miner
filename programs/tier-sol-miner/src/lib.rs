@@ -43,4 +43,18 @@ pub mod tier_sol_miner {
         )?;
         Ok(())
     }
+
+    pub fn whitelist_account(
+        ctx: Context<WhiteList>,
+        expiry: u64,
+        tier_name: &[u8]
+
+    ) -> Result<()> {
+        ctx.accounts.whitelist_account(
+            expiry,
+            ctx.bumps.whitelist_info,
+            tier_name
+        )?;
+        Ok(())
+    }
 }
