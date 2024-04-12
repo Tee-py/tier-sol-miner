@@ -15,5 +15,7 @@ pub enum MinerError {
     #[msg("Whitelist has expired")]
     ExpiredWhiteList,
     #[msg("Invalid deposit amount")]
-    InvalidDepositAmount
+    InvalidDepositAmount,
+    #[msg("Invalid tier: due to inactive of user_info tier mismatch")]
+    InvalidTier
 }

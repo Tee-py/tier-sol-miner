@@ -85,4 +85,14 @@ pub mod tier_sol_miner {
         )?;
         Ok(())
     }
+
+    pub fn increase_stake(
+        ctx: Context<IncreaseStake>,
+        amount: u64
+    ) -> Result<()> {
+        ctx.accounts.increase_stake(
+            amount
+        )?;
+        Ok(())
+    }
 }
