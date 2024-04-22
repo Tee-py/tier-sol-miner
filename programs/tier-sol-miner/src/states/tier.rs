@@ -7,9 +7,10 @@ pub struct TierInfo {
     pub apy: u64,
     pub lock_duration: u64,
     pub is_active: bool,
-    pub bump: u8
+    pub bump: u8,
+    pub nonce: u8
 }
 
 impl Space for TierInfo {
-    const INIT_SPACE: usize = (8 * 3) + 2;
+    const INIT_SPACE: usize = (8 * 4) + 3;
 }

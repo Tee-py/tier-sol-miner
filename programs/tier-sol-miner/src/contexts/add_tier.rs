@@ -3,24 +3,24 @@ use crate::states::tier::TierInfo;
 use crate::states::mine::MineInfo;
 
 #[derive(Accounts)]
-#[instruction(tier_name: &[u8])]
 pub struct AddTier<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
     #[account(
         init,
-        payer: admin,
-        space: 8 + TierInfo::INIT_SPACE,
-        seeds: [tier_name.as_ref(), admin.key().as_ref()],
+        payer = admin,
+        space = 8 + TierInfo::INIT_SPACE,
+        seeds = [&[mine_info.current_tier_nonce], admin.key().as_ref()],
         bump
     )]
-    pub tier: Account<'info, TierInfo>,
+    pub tier_info: Account<'info, TierInfo>,
     #[account(
+        mut,
         seeds = [b"mine".as_ref(), admin.key().as_ref()],
-        bump = mine_account.bump,
-        constraint = mine_account.admin == admin.key()
+        bump = mine_info.bump,
+        constraint = mine_info.admin == admin.key()
     )]
-    pub mine_account: Account<'info, MineInfo>,
+    pub mine_info: Account<'info, MineInfo>,
     pub system_program: Program<'info, System>
 }
 
@@ -32,14 +32,19 @@ impl<'info> AddTier<'info> {
         lock_duration: u64,
         bump: u8
     ) -> Result<()> {
-        self.tier.set_inner(TierInfo {
+        self.tier_info.set_inner(TierInfo {
             lock_duration,
             minimum_token_amount,
             apy,
             is_active: true,
             total_locked: 0,
-            bump
+            bump,
+            nonce: self.mine_info.current_tier_nonce
         });
+        // Increase mine info tier nonce
+        let mut mine_info = self.mine_info.clone().into_inner();
+        mine_info.current_tier_nonce += 1;
+        self.mine_info.set_inner(mine_info);
         Ok(())
     }
 }

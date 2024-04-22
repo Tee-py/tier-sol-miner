@@ -17,5 +17,13 @@ pub enum MinerError {
     #[msg("Invalid deposit amount")]
     InvalidDepositAmount,
     #[msg("Invalid tier: due to inactive of user_info tier mismatch")]
-    InvalidTier
+    InvalidTier,
+    #[msg("Invalid Argument")]
+    InvalidArgument,
+    #[msg("Operation not allowed")]
+    OperationNotAllowed,
+    #[msg("Integer Conversion Failure")]
+    ConversionFailure,
+    #[msg("Maths Error due to Overflow or Underflow")]
+    MathsError
 }
