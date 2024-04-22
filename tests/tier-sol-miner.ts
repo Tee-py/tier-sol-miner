@@ -121,13 +121,13 @@ describe("tier-sol-miner", () => {
     },
     tier2: {
       apy: 4000,
-      minimumTokenAmount: 1000,
+      minimumTokenAmount: 1000 * 10**TOKEN_DECIMALS,
       lockDuration: 5,
       tierAddress: tier2
     },
     tier3: {
       apy: 6000,
-      minimumTokenAmount: 2000,
+      minimumTokenAmount: 2000 * 10**TOKEN_DECIMALS,
       lockDuration: 5,
       tierAddress: tier3
     }
@@ -262,27 +262,58 @@ describe("tier-sol-miner", () => {
   });
 
   it("Init Staking Test [Referrer]", async () => {
-    //console.log("init test")
-  });
+    const [userInfoPK, _1] = PublicKey.findProgramAddressSync([Buffer.from("user"), user2.publicKey.toBuffer()], program.programId);
+    const [refUserInfoPK, _2] = PublicKey.findProgramAddressSync([Buffer.from("user"), user1.publicKey.toBuffer()], program.programId);
+    const [refInfoPK, _3] = PublicKey.findProgramAddressSync([Buffer.from("referral"), refUserInfoPK.toBuffer()], program.programId);
+    const ata = await mintToAccount(user2.publicKey, 1000);
+    const accounts = {
+      signer: user2.publicKey,
+      userInfo: userInfoPK,
+      tokenAccount: ata,
+      mineInfo: mineAccount,
+      mineVault,
+      tierInfo: tier2,
+      referrerUserInfo: refUserInfoPK,
+      referrerInfo: refInfoPK,
+      feeCollector: feeCollector.publicKey,
+      systemProgram: SystemProgram.programId
+    }
+    const tierInfo = await program.account.tierInfo.fetch(tier2);
+    const beforeInitVaultBalance = await connection.getBalance(mineVault);
+    const beforeInitFeeCollectorBalance = await connection.getBalance(feeCollector.publicKey);
+    await program.methods.initializeStakingWithReferrer(
+      tierInfo.nonce,
+      new anchor.BN(10*LAMPORTS_PER_SOL)
+    )
+      .accounts({ ...accounts })
+      .signers([user2])
+      .rpc()
+      .then(confirm)
+    const afterInitTierInfo = await program.account.tierInfo.fetch(tier2);
+    const userInfo = await program.account.userInfo.fetch(userInfoPK);
+    const afterInitVaultBalance = await connection.getBalance(mineVault);
+    const afterInitFeeCollectorBalance = await connection.getBalance(feeCollector.publicKey);
+    const referralInfo = await program.account.referralInfo.fetch(refInfoPK);
 
-  it("Init Staking Test [Insufficient Token Balance]", async () => {
-    //console.log("init test")
-  });
+    const expectedDevFee = (devFee * 10 * LAMPORTS_PER_SOL)/10000;
+    const expectedTotalLocked = (10 * LAMPORTS_PER_SOL) - expectedDevFee;
+    const expectedAccruedInterest = calculateInterest(expectedTotalLocked, tierInfo.apy.toNumber(), tierInfo.lockDuration.toNumber());
+    const expectedReferralBonus = expectedTotalLocked * referralReward/10000;
 
-  it("Init Staking Test [Wrong Mint Address]", async () => {
-    //console.log("init test")
-  });
+    expect(userInfo.owner.toString()).to.equals(user2.publicKey.toString());
+    expect(userInfo.totalLocked.toString()).to.equals(expectedTotalLocked.toString());
+    expect(expectedAccruedInterest - userInfo.accruedInterest.toNumber()).to.equals(4); // Must not be more than 2 LAMPORTS
+    expect(userInfo.lockTs.toNumber()).to.greaterThan(1000000);
+    expect(userInfo.tier.toString()).to.equals(tier2.toString());
+    expect(userInfo.isWhitelist).to.equals(false);
+    expect(afterInitVaultBalance - beforeInitVaultBalance).to.equals(expectedTotalLocked);
+    expect(afterInitFeeCollectorBalance - beforeInitFeeCollectorBalance).to.equals(expectedDevFee);
+    expect(afterInitTierInfo.totalLocked.toNumber() - tierInfo.totalLocked.toNumber()).to.equals(expectedTotalLocked);
 
-  it("Init Staking Test [Wrong Token Account Owner]", async () => {
-    //console.log("init test")
-  });
-
-  it("Init Staking Test [Invalid Referrer]", async () => {
-    //console.log("init test")
-  });
-
-  it("Init Staking Test [Invalid Fee Collector]", async () => {
-    //console.log("init test")
+    expect(referralInfo.earnings.toNumber()).to.equals(expectedReferralBonus);
+    expect(referralInfo.count.toNumber()).to.equals(1);
+    expect(referralInfo.owner.toString()).to.equals(user1.publicKey.toString());
+    expect(referralInfo.userInfo.toString()).to.equals(refUserInfoPK.toString())
   });
 
   it("Increase stake Test", async () => {

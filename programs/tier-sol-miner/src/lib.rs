@@ -74,18 +74,18 @@ pub mod tier_sol_miner {
         Ok(())
     }
 
-    // pub fn initialize_staking_with_referrer(
-    //     ctx: Context<InitStakingWithReferrer>,
-    //     tier_nonce: u8,
-    //     deposit_amount: u64
-    // ) -> Result<()> {
-    //     ctx.accounts.initialize(
-    //         deposit_amount,
-    //         ctx.bumps.user_info,
-    //         tier_nonce
-    //     )?;
-    //     Ok(())
-    // }
+    pub fn initialize_staking_with_referrer(
+        ctx: Context<InitStakingWithReferrer>,
+        tier_nonce: u8,
+        deposit_amount: u64
+    ) -> Result<()> {
+        ctx.accounts.initialize(
+            deposit_amount,
+            ctx.bumps.user_info,
+            tier_nonce
+        )?;
+        Ok(())
+    }
 
     // pub fn initialize_whitelist(
     //     ctx: Context<InitWhiteList>,
