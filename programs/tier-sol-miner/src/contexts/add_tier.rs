@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::states::tier::TierInfo;
 use crate::states::mine::MineInfo;
+use crate::errors::MinerError;
 
 #[derive(Accounts)]
 pub struct AddTier<'info> {
@@ -10,15 +11,15 @@ pub struct AddTier<'info> {
         init,
         payer = admin,
         space = 8 + TierInfo::INIT_SPACE,
-        seeds = [&[mine_info.current_tier_nonce], admin.key().as_ref()],
+        seeds = [b"tier".as_ref(), &[mine_info.current_tier_nonce]],
         bump
     )]
     pub tier_info: Account<'info, TierInfo>,
     #[account(
         mut,
-        seeds = [b"mine".as_ref(), admin.key().as_ref()],
+        seeds = [b"mine".as_ref()],
         bump = mine_info.bump,
-        constraint = mine_info.admin == admin.key()
+        constraint = mine_info.admin == admin.key() && mine_info.is_active @ MinerError::InvalidMine
     )]
     pub mine_info: Account<'info, MineInfo>,
     pub system_program: Program<'info, System>
