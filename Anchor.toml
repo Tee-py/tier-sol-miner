@@ -17,3 +17,7 @@ wallet = ".anchor/deployer.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+init_devnet = "ts-node scripts/init_devnet.ts"
+init_mainnet = "ts-node scripts/init_mainnet.ts"
+mint = "ts-node scripts/mint.ts"
+add_tier = "ts-node scripts/add_tier.ts"
