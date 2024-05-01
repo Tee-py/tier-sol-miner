@@ -33,20 +33,20 @@ pub struct InitStaking<'info> {
     )]
     pub token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
-        seeds = [b"mine".as_ref(), mine_info.admin.as_ref()],
+        seeds = [b"mine".as_ref()],
         bump = mine_info.bump,
-        constraint = mine_info.is_active @ MinerError::InactiveMine
+        constraint = mine_info.is_active @ MinerError::InvalidMine
     )]
     pub mine_info: Account<'info, MineInfo>,
     #[account(
         mut,
-        seeds = [b"mine-vault", mine_info.admin.as_ref()],
+        seeds = [b"mine-vault"],
         bump = mine_vault.bump
     )]
     pub mine_vault: Account<'info, MineVault>,
     #[account(
         mut,
-        seeds = [&[_tier_nonce], mine_info.admin.as_ref()],
+        seeds = [b"tier".as_ref(), &[_tier_nonce]],
         bump = tier_info.bump,
         constraint = tier_info.is_active && _tier_nonce == tier_info.nonce @ MinerError::InvalidTier
     )]
@@ -81,20 +81,20 @@ pub struct InitStakingWithReferrer<'info> {
     )]
     pub token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
-        seeds = [b"mine".as_ref(), mine_info.admin.as_ref()],
+        seeds = [b"mine"],
         bump = mine_info.bump,
-        constraint = mine_info.is_active @ MinerError::InactiveMine
+        constraint = mine_info.is_active @ MinerError::InvalidMine
     )]
     pub mine_info: Account<'info, MineInfo>,
     #[account(
         mut,
-        seeds = [b"mine-vault", mine_info.admin.as_ref()],
+        seeds = [b"mine-vault"],
         bump = mine_vault.bump
     )]
     pub mine_vault: Account<'info, MineVault>,
     #[account(
         mut,
-        seeds = [&[_tier_nonce], mine_info.admin.as_ref()],
+        seeds = [b"tier", &[_tier_nonce]],
         bump = tier_info.bump,
         constraint = tier_info.is_active && _tier_nonce == tier_info.nonce @ MinerError::InvalidTier
     )]
@@ -202,7 +202,8 @@ impl<'info> InitStakingWithReferrer<'info> {
     pub fn initialize(
         &mut self,
         deposit_amount: u64,
-        bump: u8,
+        bump1: u8,
+        bump2: u8,
         _tier_nonce: u8
     ) -> Result<()> {
         if deposit_amount <= 0 {
@@ -260,7 +261,7 @@ impl<'info> InitStakingWithReferrer<'info> {
             interest_accrued, self.tier_info.apy, self.tier_info.lock_duration, dev_fee, actual_amount
         );
         self.user_info.set_inner(UserInfo {
-            bump,
+            bump: bump1,
             owner: self.signer.key(),
             total_locked: actual_amount,
             accrued_interest: interest_accrued,
@@ -285,6 +286,7 @@ impl<'info> InitStakingWithReferrer<'info> {
         let mut referral_info = self.referrer_info.clone().into_inner();
         if referral_info.earnings == 0 {
             referral_info.earnings = bonus;
+            referral_info.bump = bump2;
             referral_info.count = 1;
             referral_info.owner = self.referrer_user_info.owner;
             referral_info.user_info = self.referrer_user_info.key();

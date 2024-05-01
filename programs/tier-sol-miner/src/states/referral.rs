@@ -5,9 +5,10 @@ pub struct ReferralInfo {
     pub user_info: Pubkey,
     pub owner: Pubkey,
     pub earnings: u64,
-    pub count: u64
+    pub count: u64,
+    pub bump: u8
 }
 
 impl Space for ReferralInfo {
-    const INIT_SPACE: usize = (32 * 2) + (8 * 2);
+    const INIT_SPACE: usize = (32 * 2) + (8 * 2) + 1;
 }

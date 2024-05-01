@@ -9,7 +9,7 @@ pub struct Initialize<'info> {
         init,
         payer = initializer,
         space = 8 + MineInfo::INIT_SPACE,
-        seeds = [b"mine".as_ref(), initializer.key().as_ref()],
+        seeds = [b"mine".as_ref()],
         bump
     )]
     pub mine_info: Account<'info, MineInfo>,
@@ -17,7 +17,7 @@ pub struct Initialize<'info> {
         init,
         payer = initializer,
         space = 8 + MineVault::INIT_SPACE,
-        seeds = [b"mine-vault", initializer.key().as_ref()],
+        seeds = [b"mine-vault".as_ref()],
         bump
     )]
     pub mine_vault: Account<'info, MineVault>,

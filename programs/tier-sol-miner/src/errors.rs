@@ -6,8 +6,8 @@ pub enum MinerError {
     InvalidTokenAccount,
     #[msg("Selected TIER is not active")]
     InactiveTier,
-    #[msg("Mine is currently inactive")]
-    InactiveMine,
+    #[msg("Invalid mine account")]
+    InvalidMine,
     #[msg("Referral account is invalid")]
     InvalidReferrer,
     #[msg("Invalid Fee Collector")]
@@ -16,7 +16,7 @@ pub enum MinerError {
     ExpiredWhiteList,
     #[msg("Invalid deposit amount")]
     InvalidDepositAmount,
-    #[msg("Invalid tier: due to inactive of user_info tier mismatch")]
+    #[msg("Invalid tier: due to inactive tier, nonce mismtatch or user_info tier mismatch")]
     InvalidTier,
     #[msg("Invalid Argument")]
     InvalidArgument,
