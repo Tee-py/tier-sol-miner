@@ -96,9 +96,9 @@ describe("tier-sol-miner", () => {
   const [user3InfoPk, _3] = PublicKey.findProgramAddressSync([Buffer.from("user"), user3.publicKey.toBuffer()], program.programId);
   const [user4InfoPk, _4] = PublicKey.findProgramAddressSync([Buffer.from("user"), user4.publicKey.toBuffer()], program.programId);
   const [user1refInfoPK, _5] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user1InfoPk.toBuffer()], program.programId);
-  const [user2refInfoPK, _6] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user2InfoPk.toBuffer()], program.programId);
-  const [user3refInfoPK, _7] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user3InfoPk.toBuffer()], program.programId);
-  const [user4refInfoPK, _8] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user4InfoPk.toBuffer()], program.programId);
+  // const [user2refInfoPK, _6] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user2InfoPk.toBuffer()], program.programId);
+  // const [user3refInfoPK, _7] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user3InfoPk.toBuffer()], program.programId);
+  // const [user4refInfoPK, _8] = PublicKey.findProgramAddressSync([Buffer.from("referral"), user4InfoPk.toBuffer()], program.programId);
   let user1Ata: PublicKey;
   let user2Ata: PublicKey;
   let user3Ata: PublicKey;
