@@ -1,4 +1,5 @@
 [toolchain]
+anchor_version = "0.29.0"
 
 [features]
 seeds = false
@@ -11,8 +12,8 @@ tier_sol_miner = "K35hGi544FaiNx7s1MJuLuBxhr993Bq59CJR9mBaUna"
 url = "https://api.apr.dev"
 
 [provider]
-# cluster = "Localnet"
-cluster = "https://api.devnet.solana.com"
+cluster = "Localnet"
+# cluster = "https://api.devnet.solana.com"
 wallet = ".anchor/deployer.json"
 
 [scripts]
